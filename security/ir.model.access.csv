@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_msd_attendance_employee,msd.attendance.employee,model_msd_attendance,base.group_user,1,1,1,1
+access_msd_attendance_user,msd.attendance.user,model_msd_attendance,msd_attendance.group_msd_attendance_team_approver,1,1,1,1
+access_msd_attendance_manager,msd.attendance.manager,model_msd_attendance,msd_attendance.group_msd_attendance_manager,1,1,1,1

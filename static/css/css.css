@@ -1,0 +1,9 @@
+.o_form_editable .attendance_button {
+    line-height:1.0;
+    margin-bottom:6px;
+    readonly:false;
+}
+.o_form_readonly .attendance_button {
+    line-height:1.0;
+    readonly:true;
+}

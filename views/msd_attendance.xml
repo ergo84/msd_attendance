@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!--Search View-->
+        <record id="view_msd_attendance_search" model="ir.ui.view">
+            <field name="name">msd.attendance.search</field>
+            <field name="model">msd.attendance</field>
+            <field name="arch" type="xml">
+<!--                ===========================-->
+                <search string="勤務表">
+                <!-- 検索欄に文字を入力したら出てくる候補のカスタマイズ -->
+
+                    <field name="employee_id"/>
+                    <field name="state"/>
+                    <filter string="自分の勤務表" name="my_attendance" domain="[('employee_id.user_id', '=', uid)]"/>
+                    <filter string="自分の部門" name="my_team_reports" domain="[('employee_id.parent_id.user_id', '=', uid)]" groups="msd_attendance.group_msd_attendance_team_approver"/>
+                    <separator />
+                    <filter domain="[('state', '=', 'reported')]" string="未承認" name="reported"/>
+                    <filter domain="[('state', '=', 'approved')]" string="未処理" name="to_process"/>
+                    <filter domain="[('state', '=', 'done')]" string="処理済" name="done"/>
+                    <separator/>
+                    <filter domain="[('employee_id.active', '=', False)]" string="過去の従業員" name="inactive" groups="msd_attendance.group_msd_attendance_all_approver,msd_attendance.group_msd_attendance_manager"/>
+
+                <!-- グループ化のドロップダウンメニューに候補として追加する内容 -->
+                    <group expand="1" string="Group By">
+                        <filter string="従業員" name="employee" domain="[]" context="{'group_by':'employee_id'}"/>
+                        <filter string="部門" name="department" context="{'group_by':'department_id'}"/>
+                        <filter string="PJコード" name="PJcode" domain="[]" context="{'group_by': 'pjcode'}"/>
+                        <filter string="日付" name="month" domain="[]" context="{'group_by': 'create_date'}"/>
+                        <filter string="ステータス" name="status" domain="[]" context="{'group_by': 'state'}"/>
+                    </group>
+                </search>
+<!--                ===============================-->
+            </field>
+        </record>
+        <!--Tree View-->
+        <record id="view_msd_attendance_tree" model="ir.ui.view">
+            <field name="name">msd.attendance.tree</field>
+            <field name="model">msd.attendance</field>
+            <field name="arch" type="xml">
+                <tree string="勤務表">
+                <!-- editable='bottom'の属性をtreeタグにつけると、treeのリストはそのまま編集可能になるが、フォームは開けなくなる -->
+                    <field name="title" />
+                    <field name="employee_id"/>
+                    <field name="create_date"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <template id="assets_backend" inherit_id="web.assets_backend" name="msd_assets_backend">
+            <xpath expr="." position="inside">
+                <link rel="stylesheet" type="text/css" href="/msd_attendance/static/css/css.css"/>
+            </xpath>
+        </template>
+        <!--Form View-->
+        <record id="view_msd_attendance_form" model="ir.ui.view">
+            <field name="name">msd.attendance.form</field>
+            <field name="model">msd.attendance</field>
+            <field name="arch" type="xml">
+                <form string="勤務表">
+                    <header>
+                    <!-- ボタンを設置。もしborrowedがTrueかFalseで違うボタンを表示する→ボタン押されたらborrowedの値を変更 -->
+                        <button name="action_submit_attendance" states="draft" string="部長に申請" type="object" class="btn-primary"/>
+                        <button name="approve_attendance" states="reported" string="承認" type="object" groups="msd_attendance.group_msd_attendance_team_approver,msd_attendance.group_msd_attendance_all_approver" class="btn-primary"/>
+                        <button name="action_process_attendance" states="approved" string="処理済" type="object" groups="msd_attendance.group_msd_attendance_manager" class="btn-primary"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,reported,approved,done"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="title" class="oe_edit_only"/>
+                            <h1>
+                                <field name="title" placeholder="e.g. 202007勤務表"/>
+                            </h1>
+                        </div>
+                        <group col="4">
+                            <field name="employee_id"/>
+                            <field name="approver"/>
+                            <field name="date_start"/>
+                            <field name="pjcode"/>
+                            <field name="date_end"/>
+                            <field name="workload"/>
+                            <div class="o_td_label">
+                                <label for="action_get_attachment_view" string="添付ファイル"/>
+                            </div>
+                            <div style="font-weight:bold;display:flex;">
+                                <button class="oe_edit_only btn-secondary attendance_button" name="action_get_attachment_view" string="添付ファイル" type="object" icon="fa-paperclip"/>
+                                <div style="padding-top:2px"><field name="attachment_number" style="margin:0 6px 0 10px;"/></div>
+                                <div style="padding-top:2px">件</div>
+                            </div>
+                            <field name="remarks" colspan="4"/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">-->
+                        <field name="message_follower_ids" widget="mail_followers"/>-->
+                        <field name="activity_ids" widget="mail_activity"/>-->
+                        <field name="message_ids" widget="mail_thread"/>-->
+                    </div>-->
+                </form>
+            </field>
+        </record>
+                    <!-- kanban view -->
+        <record id="view_msd_attendance_kanban" model="ir.ui.view">
+            <field name="name">msd.attendance.kanban</field>
+            <field name="model">msd.attendance</field>
+            <field name="arch" type="xml">
+                <kanban create="false" class="o_modules_kanban">
+                <!-- kanbanビューで使いたいフィールドを宣言 -->
+                    <field name="title" />
+                    <field name="employee_id"/>
+                    <field name="date_start"/>
+                    <field name="date_end"/>
+                    <field name="pjcode"/>
+                    <field name="state"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_module_vignette">
+                                <t t-set="v_borrowed" t-value="record.borrowed.raw_value == true"/>
+        
+                                <!-- 第１部分　展開できるメニュー -->
+                                <div class="o_dropdown_kanban dropdown" tabindex="-1">
+                                    <a class="dropdown-toggle o-no-caret btn" data-toggle="dropdown"
+                                    data-display="static" href="#" role="button" aria-label="Dropdown menu"
+                                    title="Dropdown menu">
+                                        <span class="fa fa-ellipsis-v"/>
+                                    </a>
+                                    <div class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                                        <!-- type="edit" 当存在type属性，且值为edit时，点击这个下拉项，会进入表单编辑状态 -->
+                                        <a type="edit" class="dropdown-item">编辑</a>
+                                        <!-- type="delete" 当存在type属性，且值为delete时，点击这个下拉项，会提示是否删除这条记录 -->
+                                        <a type="delete" class="dropdown-item">删除</a>
+                                        <!-- 调用模型后台方法 调用后台方法action_return，设为未被借阅 这里使用的自定义的方式所以type='object'-->
+                                        <a t-if="v_borrowed == true" name="action_return" type="object"
+                                        role="menuitem" class="dropdown-item">设为未被借阅
+                                        </a>
+                                        <!-- 调用模型后台方法 调用后台方法action_borrow，设为被借阅 -->
+                                        <a t-if="v_borrowed == false" name="action_borrow" type="object"
+                                        role="menuitem" class="dropdown-item">设为已被借阅
+                                        </a>
+                                    </div>
+                                </div>
+                            
+                                <!-- 第２部分 kanbanの内容 -->
+                                <!-- 第１行目は画像の設置：t-att-srcは像画の場所を指定 -->
+                                <img role="img" t-att-alt="record.name.value" t-att-title="record.name.raw_value"
+                                    style="float:left;max-height:127px;"
+                                    t-att-src="kanban_image('msd.attendance', 'image_128', record.id.raw_value)"/>
+                                <div class="oe_module_desc" style="float:left;padding-left:15px;">
+                                    <h4 class="oe_module_name" style="font-size:13px;" >
+                                        <field name="name"/>
+                                        <code>
+                                            <field name="author"/>
+                                        </code>
+                                    </h4>
+                                    <p class="oe_isbn">
+                                        <field name="isbn"/>
+                                    </p>
+                                    <p class="oe_publish_info">
+                                        <field name="publisher"/>
+                                        <field name="publish_date"/>
+                                    </p>
+                                    <div class="oe_module_action">
+                                        <!-- 调用后台方法展示形式2 -->
+                                        <button type="object" class="btn btn-primary btn-sm"
+                                                name="action_return"
+                                                t-if="record.borrowed.raw_value == true">设为未被借阅
+                                        </button>
+                                        <button type="object" class="btn btn-primary btn-sm"
+                                                name="action_borrow"
+                                                t-if="record.borrowed.raw_value == false">设为已被借阅
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+        <!--action-->
+        <record id="action_msd_attendance" model="ir.actions.act_window">
+            <!-- ビューにおける名称 -->
+            <field name="name">未承認勤務表報告</field>
+            <!-- ウィンドーのアクションだよ -->
+            <field name="type">ir.actions.act_window</field>
+            <!-- モデルと関連づける -->
+            <field name="res_model">msd.attendance</field>
+            <!-- この動作はどのようなビューを表示させるか規定 -->
+            <field name="view_mode">tree,form,kanban</field>
+            <!-- こちらのドメインは最初から表示される内容のフィルタをかけて限定表示するような機能設定 -->
+            <!-- 例：<field name="domain">[('author','=','金庸')]</field> -->
+            <!-- <field name="domain">[('author','=','金庸')]</field> -->
+            <field name="domain">[]</field>
+            <!-- こちらはsearch欄の場所で最初から上記設定したgroup化について最初からデフォルトとなってる設定 -->
+            <!-- ここでの命名法は特殊で、search_default_から始まり、後ろに検索ビューのとあるfilterのnameを入れる -->
+            <field name="context">{}</field>
+            <!-- 'search_default_author_group': 1, 'search_default_name_group':1 上記のcontextに入力 -->
+            <!-- ここのrefはsearch viewのidを入れないといけない -->
+<!--            <field name="search_view_id" ref="view_msd_attendance_search"/>-->
+        </record>
+
+        <record id="action_msd_attendance_unapproved" model="ir.actions.act_window">
+            <field name="name">未承認勤務表報告</field>
+            <field name="res_model">msd.attendance</field>
+            <field name="view_mode">tree,kanban,form</field>
+            <field name="search_view_id" ref="view_msd_attendance_search"/>
+            <field name="domain">[]</field>
+            <field name="context">{'search_default_reported': 1}</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_empty_folder">
+                No reports to approve
+              </p>
+            </field>
+        </record>
+
+        <record id="action_msd_attendance_to_process" model="ir.actions.act_window">
+            <field name="name">未処理勤務表報告</field>
+            <field name="res_model">msd.attendance</field>
+            <field name="view_mode">tree,kanban,form</field>
+            <field name="search_view_id" ref="view_msd_attendance_search"/>
+            <field name="domain">[]</field>
+            <field name="context">{'search_default_approved': 1}</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_empty_folder">
+                No reports to process
+              </p>
+            </field>
+        </record>
+
+        <record id="action_msd_attendance_done" model="ir.actions.act_window">
+            <field name="name">処理済勤務表報告</field>
+            <field name="res_model">msd.attendance</field>
+            <field name="view_mode">tree,kanban,form</field>
+            <field name="search_view_id" ref="view_msd_attendance_search"/>
+            <field name="domain">[]</field>
+            <field name="context">{'search_default_done': 1}</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_empty_folder">
+                No reports processed
+              </p>
+            </field>
+        </record>
+
+        <record id="msd_attendance_actions_my_unsubmitted" model="ir.actions.act_window">
+            <field name="name">自分の勤務表</field>
+            <field name="res_model">msd.attendance</field>
+            <field name="view_mode">tree,kanban,form</field>
+            <field name="search_view_id" ref="view_msd_attendance_search"/>
+            <field name="context">{'search_default_my_attendance': 1, 'search_default_no_report': 1}</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                新しい報告作成
+              </p>
+            </field>
+        </record>
+         <!--Menu-->
+        <!-- Top Menu Item -->
+        <menuitem name="勤務表" id="menu_msd_attendance_root" sequence="50" web_icon="msd_attendance,static/description/icon.png"/>
+
+        <!-- Middle Menu -->
+        <menuitem id="menu_msd_attendance" name='勤務表報告' parent="menu_msd_attendance_root" sequence="10" groups="msd_attendance.group_msd_attendance_team_approver"/>
+        <menuitem id="menu_msd_attendance_unapproved"
+                  name="未承認"
+                  sequence="1"
+                  parent="menu_msd_attendance"
+                  action="action_msd_attendance_unapproved"
+        />
+        <menuitem id="menu_msd_attendance_to_process"
+                  name="未処理"
+                  sequence="2"
+                  parent="menu_msd_attendance"
+                  groups="msd_attendance.group_msd_attendance_all_approver"
+                  action="action_msd_attendance_to_process"
+        />
+        <menuitem id="menu_msd_attendance_done"
+                  name="処理済"
+                  sequence="3"
+                  parent="menu_msd_attendance"
+                  groups="msd_attendance.group_msd_attendance_all_approver"
+                  action="action_msd_attendance_done"
+        />
+
+        <menuitem id="menu_msd_attendance_my_attendance" name="自分の勤務表" sequence="20" parent="menu_msd_attendance_root" groups="base.group_user"/>
+        <menuitem id="menu_msd_attendance_my_attendance_to_submit" sequence="20" parent="menu_msd_attendance_root" action="msd_attendance_actions_my_unsubmitted"/>
+    </data>
+
+</odoo>
