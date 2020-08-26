@@ -17,7 +17,7 @@
                     <filter string="自分の部門" name="my_team_reports" domain="[('employee_id.parent_id.user_id', '=', uid)]" groups="msd_attendance.group_msd_attendance_team_approver"/>
                     <separator />
                     <filter domain="[('state', '=', 'reported')]" string="未承認" name="reported"/>
-                    <filter domain="[('state', '=', 'approved')]" string="未処理" name="to_process"/>
+                    <filter domain="[('state', '=', 'approved')]" string="未処理" name="approved"/>
                     <filter domain="[('state', '=', 'done')]" string="処理済" name="done"/>
                     <separator/>
                     <filter domain="[('employee_id.active', '=', False)]" string="過去の従業員" name="inactive" groups="msd_attendance.group_msd_attendance_all_approver,msd_attendance.group_msd_attendance_manager"/>
