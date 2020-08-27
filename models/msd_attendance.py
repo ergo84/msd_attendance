@@ -18,6 +18,10 @@ class MsdAttendance(models.Model):
     def _default_approver(self):
         return self.env.user.employee_id.parent_id
 
+    # @api.model
+    # def _default_pjcode(self):
+    #     return self.env.user.employee_id.pj_cd
+
     title = fields.Char(string="勤務表報告", copy=False, help="勤務表の報告です")
     employee_id = fields.Many2one('hr.employee', string="従業員", readonly=True, default=_default_employee_id)
     state = fields.Selection([

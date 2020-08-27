@@ -9,8 +9,6 @@
             <field name="arch" type="xml">
 <!--                ===========================-->
                 <search string="勤務表">
-                <!-- 検索欄に文字を入力したら出てくる候補のカスタマイズ -->
-
                     <field name="employee_id"/>
                     <field name="state"/>
                     <filter string="自分の勤務表" name="my_attendance" domain="[('employee_id.user_id', '=', uid)]"/>
@@ -61,7 +59,6 @@
             <field name="arch" type="xml">
                 <form string="勤務表">
                     <header>
-                    <!-- ボタンを設置。もしborrowedがTrueかFalseで違うボタンを表示する→ボタン押されたらborrowedの値を変更 -->
                         <button name="action_submit_attendance" states="draft" string="部長に申請" type="object" class="btn-primary"/>
                         <button name="approve_attendance" states="reported" string="承認" type="object" groups="msd_attendance.group_msd_attendance_team_approver,msd_attendance.group_msd_attendance_all_approver" class="btn-primary"/>
                         <button name="action_process_attendance" states="approved" string="処理済" type="object" groups="msd_attendance.group_msd_attendance_manager" class="btn-primary"/>
@@ -93,10 +90,10 @@
                         </group>
                     </sheet>
                     <div class="oe_chatter">-->
-                        <field name="message_follower_ids" widget="mail_followers"/>-->
-                        <field name="activity_ids" widget="mail_activity"/>-->
-                        <field name="message_ids" widget="mail_thread"/>-->
-                    </div>-->
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
                 </form>
             </field>
         </record>
@@ -106,70 +103,28 @@
             <field name="model">msd.attendance</field>
             <field name="arch" type="xml">
                 <kanban create="false" class="o_modules_kanban">
-                <!-- kanbanビューで使いたいフィールドを宣言 -->
                     <field name="title" />
                     <field name="employee_id"/>
-                    <field name="date_start"/>
-                    <field name="date_end"/>
+                    <field name="create_date"/>
                     <field name="pjcode"/>
                     <field name="state"/>
                     <templates>
                         <t t-name="kanban-box">
-                            <div class="oe_module_vignette">
-                                <t t-set="v_borrowed" t-value="record.borrowed.raw_value == true"/>
-        
-                                <!-- 第１部分　展開できるメニュー -->
-                                <div class="o_dropdown_kanban dropdown" tabindex="-1">
-                                    <a class="dropdown-toggle o-no-caret btn" data-toggle="dropdown"
-                                    data-display="static" href="#" role="button" aria-label="Dropdown menu"
-                                    title="Dropdown menu">
-                                        <span class="fa fa-ellipsis-v"/>
-                                    </a>
-                                    <div class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-                                        <!-- type="edit" 当存在type属性，且值为edit时，点击这个下拉项，会进入表单编辑状态 -->
-                                        <a type="edit" class="dropdown-item">编辑</a>
-                                        <!-- type="delete" 当存在type属性，且值为delete时，点击这个下拉项，会提示是否删除这条记录 -->
-                                        <a type="delete" class="dropdown-item">删除</a>
-                                        <!-- 调用模型后台方法 调用后台方法action_return，设为未被借阅 这里使用的自定义的方式所以type='object'-->
-                                        <a t-if="v_borrowed == true" name="action_return" type="object"
-                                        role="menuitem" class="dropdown-item">设为未被借阅
-                                        </a>
-                                        <!-- 调用模型后台方法 调用后台方法action_borrow，设为被借阅 -->
-                                        <a t-if="v_borrowed == false" name="action_borrow" type="object"
-                                        role="menuitem" class="dropdown-item">设为已被借阅
-                                        </a>
+                            <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <strong class="o_kanban_record_title"><span><t t-esc="record.title.value"/></span></strong>
+                                        <strong class="o_kanban_record_subtitle float-right"><span class="text-right"><field name="pjcode"/></span></strong>
                                     </div>
                                 </div>
-                            
-                                <!-- 第２部分 kanbanの内容 -->
-                                <!-- 第１行目は画像の設置：t-att-srcは像画の場所を指定 -->
-                                <img role="img" t-att-alt="record.name.value" t-att-title="record.name.raw_value"
-                                    style="float:left;max-height:127px;"
-                                    t-att-src="kanban_image('msd.attendance', 'image_128', record.id.raw_value)"/>
-                                <div class="oe_module_desc" style="float:left;padding-left:15px;">
-                                    <h4 class="oe_module_name" style="font-size:13px;" >
-                                        <field name="name"/>
-                                        <code>
-                                            <field name="author"/>
-                                        </code>
-                                    </h4>
-                                    <p class="oe_isbn">
-                                        <field name="isbn"/>
-                                    </p>
-                                    <p class="oe_publish_info">
-                                        <field name="publisher"/>
-                                        <field name="publish_date"/>
-                                    </p>
-                                    <div class="oe_module_action">
-                                        <!-- 调用后台方法展示形式2 -->
-                                        <button type="object" class="btn btn-primary btn-sm"
-                                                name="action_return"
-                                                t-if="record.borrowed.raw_value == true">设为未被借阅
-                                        </button>
-                                        <button type="object" class="btn btn-primary btn-sm"
-                                                name="action_borrow"
-                                                t-if="record.borrowed.raw_value == false">设为已被借阅
-                                        </button>
+                                <div class="row mt8">
+                                    <div class="col-6 text-muted">
+                                        <span><t t-esc="record.employee_id.value"/> <t t-esc="record.create_date.value"/></span>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="float-right text-right">
+                                            <field name="state" widget="label_selection" options="{'classes': {'draft': 'default', 'reported': 'default', 'approved': 'danger', 'done': 'success'}}"/>
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -181,7 +136,7 @@
         <!--action-->
         <record id="action_msd_attendance" model="ir.actions.act_window">
             <!-- ビューにおける名称 -->
-            <field name="name">未承認勤務表報告</field>
+            <field name="name">勤務表報告</field>
             <!-- ウィンドーのアクションだよ -->
             <field name="type">ir.actions.act_window</field>
             <!-- モデルと関連づける -->
