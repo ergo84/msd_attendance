@@ -20,9 +20,9 @@
                     <filter string="自分の勤務表" name="my_attendance" domain="[('employee_id.user_id', '=', uid)]"/>
                     <filter string="自分の部門" name="my_team_reports" domain="[('employee_id.parent_id.user_id', '=', uid)]" groups="msd_attendance.group_msd_attendance_team_approver"/>
                     <separator />
-                    <filter domain="[('state', '=', 'reported')]" string="未承認" name="reported"/>
-                    <filter domain="[('state', '=', 'approved')]" string="未処理" name="approved"/>
-                    <filter domain="[('state', '=', 'done')]" string="処理済" name="done"/>
+                    <filter domain="[('state', '=', 'draft')]" string="未提出" name="draft"/>
+                    <filter domain="[('state', '=', 'reported')]" string="未確認" name="reported"/>
+                    <filter domain="[('state', '=', 'approved')]" string="確認済" name="approved"/>
                     <separator/>
                     <filter domain="[('employee_id.active', '=', False)]" string="過去の従業員" name="inactive" groups="msd_attendance.group_msd_attendance_all_approver,msd_attendance.group_msd_attendance_manager"/>
 
@@ -65,10 +65,10 @@
             <field name="arch" type="xml">
                 <form string="勤務表">
                     <header>
-                        <button name="action_submit_attendance" states="draft" string="部長に申請" type="object" class="btn-primary"/>
-                        <button name="approve_attendance" states="reported" string="承認" type="object" groups="msd_attendance.group_msd_attendance_team_approver,msd_attendance.group_msd_attendance_all_approver" class="btn-primary"/>
-                        <button name="action_process_attendance" states="approved" string="処理済" type="object" groups="msd_attendance.group_msd_attendance_manager" class="btn-primary"/>
-                        <field name="state" widget="statusbar" statusbar_visible="draft,reported,approved,done"/>
+                        <button name="action_submit_attendance" states="draft" string="提出" type="object" class="btn-primary"/>
+                        <button name="approve_attendance" states="reported" string="確認" type="object" groups="msd_attendance.group_msd_attendance_team_approver,msd_attendance.group_msd_attendance_all_approver,msd_attendance.group_msd_attendance_manager" class="btn-primary"/>
+
+                        <field name="state" widget="statusbar" statusbar_visible="draft,reported,approved"/>
                     </header>
                     <sheet>
                         <div class="oe_title">
@@ -161,8 +161,22 @@
 <!--            <field name="search_view_id" ref="view_msd_attendance_search"/>-->
         </record>
 
-        <record id="action_msd_attendance_unapproved" model="ir.actions.act_window">
-            <field name="name">未承認勤務表報告</field>
+        <record id="action_msd_attendance_draft" model="ir.actions.act_window">
+            <field name="name">未提出勤務表報告</field>
+            <field name="res_model">msd.attendance</field>
+            <field name="view_mode">tree,kanban,form</field>
+            <field name="search_view_id" ref="view_msd_attendance_search"/>
+            <field name="domain">[]</field>
+            <field name="context">{'search_default_draft': 1}</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_empty_folder">
+                No reports to submit
+              </p>
+            </field>
+        </record>
+
+        <record id="action_msd_attendance_to_confirm" model="ir.actions.act_window">
+            <field name="name">未確認勤務表報告</field>
             <field name="res_model">msd.attendance</field>
             <field name="view_mode">tree,kanban,form</field>
             <field name="search_view_id" ref="view_msd_attendance_search"/>
@@ -170,13 +184,13 @@
             <field name="context">{'search_default_reported': 1}</field>
             <field name="help" type="html">
               <p class="o_view_nocontent_empty_folder">
-                No reports to approve
+                No reports to confirm
               </p>
             </field>
         </record>
 
-        <record id="action_msd_attendance_to_process" model="ir.actions.act_window">
-            <field name="name">未処理勤務表報告</field>
+        <record id="action_msd_attendance_confirmed" model="ir.actions.act_window">
+            <field name="name">確認済勤務表報告</field>
             <field name="res_model">msd.attendance</field>
             <field name="view_mode">tree,kanban,form</field>
             <field name="search_view_id" ref="view_msd_attendance_search"/>
@@ -184,21 +198,7 @@
             <field name="context">{'search_default_approved': 1}</field>
             <field name="help" type="html">
               <p class="o_view_nocontent_empty_folder">
-                No reports to process
-              </p>
-            </field>
-        </record>
-
-        <record id="action_msd_attendance_done" model="ir.actions.act_window">
-            <field name="name">処理済勤務表報告</field>
-            <field name="res_model">msd.attendance</field>
-            <field name="view_mode">tree,kanban,form</field>
-            <field name="search_view_id" ref="view_msd_attendance_search"/>
-            <field name="domain">[]</field>
-            <field name="context">{'search_default_done': 1}</field>
-            <field name="help" type="html">
-              <p class="o_view_nocontent_empty_folder">
-                No reports processed
+                No reports confirmed
               </p>
             </field>
         </record>
@@ -221,25 +221,25 @@
 
         <!-- Middle Menu -->
         <menuitem id="menu_msd_attendance" name='勤務表報告' parent="menu_msd_attendance_root" sequence="10" groups="msd_attendance.group_msd_attendance_team_approver"/>
-        <menuitem id="menu_msd_attendance_unapproved"
-                  name="未承認"
+        <menuitem id="menu_msd_attendance_draft"
+                  name="未提出"
                   sequence="1"
                   parent="menu_msd_attendance"
-                  action="action_msd_attendance_unapproved"
+                  action="action_msd_attendance_draft"
         />
-        <menuitem id="menu_msd_attendance_to_process"
-                  name="未処理"
+        <menuitem id="menu_msd_attendance_to_confirm"
+                  name="未確認"
                   sequence="2"
                   parent="menu_msd_attendance"
                   groups="msd_attendance.group_msd_attendance_all_approver"
-                  action="action_msd_attendance_to_process"
+                  action="action_msd_attendance_to_confirm"
         />
-        <menuitem id="menu_msd_attendance_done"
-                  name="処理済"
+        <menuitem id="menu_msd_attendance_confirmed"
+                  name="確認済"
                   sequence="3"
                   parent="menu_msd_attendance"
                   groups="msd_attendance.group_msd_attendance_all_approver"
-                  action="action_msd_attendance_done"
+                  action="action_msd_attendance_confirmed"
         />
 
         <menuitem id="menu_msd_attendance_my_attendance" name="自分の勤務表" sequence="20" parent="menu_msd_attendance_root" groups="base.group_user"/>

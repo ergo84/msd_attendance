@@ -26,9 +26,8 @@ class MsdAttendance(models.Model):
     employee_id = fields.Many2one('hr.employee', string="従業員", readonly=True, default=_default_employee_id)
     state = fields.Selection([
         ('draft', 'ドラフト'),
-        ('reported', '申請済'),
-        ('approved', '承認済'),
-        ('done', '処理済')
+        ('reported', '提出済'),
+        ('approved', '確認済')
     ],  string='ステータス', tracking=True, default='draft')
     user_id = fields.Many2one('res.users', 'Manager', readonly=True, copy=False,
                                tracking=True)
@@ -130,9 +129,9 @@ class MsdAttendance(models.Model):
         self.write({'state': 'approved'})
         self.activity_update()
 
-    def action_process_attendance(self):
-        self.write({'state': 'done'})
-        self.activity_update()
+    # def action_process_attendance(self):
+    #     self.write({'state': 'done'})
+    #     self.activity_update()
 
     # --------------------------------------------
     # Mail Thread
