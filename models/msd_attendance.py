@@ -34,7 +34,7 @@ class MsdAttendance(models.Model):
                                tracking=True)
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
     department_id = fields.Many2one('hr.department', string='Department')
-    pjcode = fields.Char(string="PJコード", required=True)
+    pjcode = fields.Char(string="PJコード", required=True, default=lambda self: self.env['ss.order']._get_pj_cds(self.env.user.employee_id.id))
     workload = fields.Float(string="工数")
     attachment_number = fields.Integer(compute='_compute_attachment_number', string='Number of Attachments')
     approver = fields.Many2one('hr.employee', string="承認者", default=_default_approver)
