@@ -29,7 +29,7 @@ class MsdAttendance(models.Model):
         ('reported', '申請済'),
         ('approved', '承認済'),
         ('done', '処理済')
-    ],  string='ステータス', default='draft')
+    ],  string='ステータス', tracking=True, default='draft')
     user_id = fields.Many2one('res.users', 'Manager', readonly=True, copy=False,
                                tracking=True)
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
@@ -111,7 +111,7 @@ class MsdAttendance(models.Model):
 
     def action_submit_attendance(self):
         self.write({'state': 'reported'})
-        #self.activity_update()
+        self.activity_update()
 
     def approve_attendance(self):
         # if not self.user_has_groups('hr_expense.group_hr_expense_team_approver'):
@@ -128,9 +128,48 @@ class MsdAttendance(models.Model):
         # responsible_id = self.user_id.id or self.env.user.id
         #self.write({'state': 'approve', 'user_id': responsible_id})
         self.write({'state': 'approved'})
-        #self.activity_update()
+        self.activity_update()
 
     def action_process_attendance(self):
         self.write({'state': 'done'})
-        #self.activity_update()
+        self.activity_update()
 
+    # --------------------------------------------
+    # Mail Thread
+    # --------------------------------------------
+
+    # def _track_subtype(self, init_values):
+    #     self.ensure_one()
+    #     if 'state' in init_values and self.state == 'approve':
+    #         return self.env.ref('hr_expense.mt_expense_approved')
+    #     elif 'state' in init_values and self.state == 'cancel':
+    #         return self.env.ref('hr_expense.mt_expense_refused')
+    #     elif 'state' in init_values and self.state == 'done':
+    #         return self.env.ref('hr_expense.mt_expense_paid')
+    #     return super(MsdAttendance, self)._track_subtype(init_values)
+    #
+    # def _message_auto_subscribe_followers(self, updated_values, subtype_ids):
+    #     res = super(MsdAttendance, self)._message_auto_subscribe_followers(updated_values, subtype_ids)
+    #     if updated_values.get('employee_id'):
+    #         employee = self.env['hr.employee'].browse(updated_values['employee_id'])
+    #         if employee.user_id:
+    #             res.append((employee.user_id.partner_id.id, subtype_ids, False))
+    #     return res
+
+    def _get_responsible_for_approval(self):
+        if self.user_id:
+            return self.user_id
+        elif self.employee_id.parent_id.user_id:
+            return self.employee_id.parent_id.user_id
+        elif self.employee_id.department_id.manager_id.user_id:
+            return self.employee_id.department_id.manager_id.user_id
+        return self.env['res.users']
+
+    def activity_update(self):
+        # for expense_report in self.filtered(lambda hol: hol.state in ['reported', 'approved', 'done']):
+        for expense_report in self.filtered(lambda hol: hol.state in ['reported']):
+            self.activity_schedule(
+                'msd_attendance.mail_act_expense_approval',
+                user_id=expense_report.sudo()._get_responsible_for_approval().id or self.env.user.id)
+        self.filtered(lambda hol: hol.state == 'approve').activity_feedback(['msd_attendance.mail_act_expense_approval'])
+        self.filtered(lambda hol: hol.state == 'cancel').activity_unlink(['msd_attendance.mail_act_expense_approval'])
