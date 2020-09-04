@@ -221,22 +221,22 @@
 
         <!-- Middle Menu -->
         <menuitem id="menu_msd_attendance" name='勤務表報告' parent="menu_msd_attendance_root" sequence="10" groups="msd_attendance.group_msd_attendance_team_approver"/>
-        <menuitem id="menu_msd_attendance_draft"
-                  name="未提出"
-                  sequence="1"
-                  parent="menu_msd_attendance"
-                  action="action_msd_attendance_draft"
-        />
+<!--        <menuitem id="menu_msd_attendance_draft"-->
+<!--                  name="未提出"-->
+<!--                  sequence="1"-->
+<!--                  parent="menu_msd_attendance"-->
+<!--                  action="action_msd_attendance_draft"-->
+<!--        />-->
         <menuitem id="menu_msd_attendance_to_confirm"
                   name="未確認"
-                  sequence="2"
+                  sequence="1"
                   parent="menu_msd_attendance"
                   groups="msd_attendance.group_msd_attendance_all_approver"
                   action="action_msd_attendance_to_confirm"
         />
         <menuitem id="menu_msd_attendance_confirmed"
                   name="確認済"
-                  sequence="3"
+                  sequence="2"
                   parent="menu_msd_attendance"
                   groups="msd_attendance.group_msd_attendance_all_approver"
                   action="action_msd_attendance_confirmed"
@@ -244,6 +244,24 @@
 
         <menuitem id="menu_msd_attendance_my_attendance" name="自分の勤務表" sequence="20" parent="menu_msd_attendance_root" groups="base.group_user"/>
         <menuitem id="menu_msd_attendance_my_attendance_to_submit" sequence="20" parent="menu_msd_attendance_root" action="msd_attendance_actions_my_unsubmitted"/>
+<!--        <menuitem id="menu_msd_attendance_my_draft"-->
+<!--                  name="未提出"-->
+<!--                  sequence="1"-->
+<!--                  parent="menu_msd_attendance_my_attendance"-->
+<!--                  action="action_msd_attendance_draft"-->
+<!--        />-->
+<!--        <menuitem id="menu_msd_attendance_my_to_confirm"-->
+<!--                  name="未確認"-->
+<!--                  sequence="2"-->
+<!--                  parent="menu_msd_attendance_my_attendance"-->
+<!--                  action="action_msd_attendance_to_confirm"-->
+<!--        />-->
+<!--        <menuitem id="menu_msd_attendance_my_confirmed"-->
+<!--                  name="確認済"-->
+<!--                  sequence="3"-->
+<!--                  parent="menu_msd_attendance_my_attendance"-->
+<!--                  action="action_msd_attendance_confirmed"-->
+<!--        />-->
     </data>
 
 </odoo>

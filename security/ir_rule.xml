@@ -5,7 +5,7 @@
             <field name="name">勤務表管理者</field>
             <field name="model_id" ref="model_msd_attendance"/>
             <field name="domain_force">[(1, '=', 1)]</field>
-            <field name="groups" eval="[(4, ref('msd_attendance.group_msd_attendance_user'))]"/>
+            <field name="groups" eval="[(4, ref('msd_attendance.group_msd_attendance_manager'))]"/>
         </record>
         <record id="ir_rule_msd_attendance_approver" model="ir.rule">
             <field name="name">承認者</field>
