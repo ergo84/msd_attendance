@@ -1,5 +1,5 @@
 {
-    'name': "msd_attendance",
+    'name': "勤務表管理",
     'summary': """
         勤務表管理
         """,
