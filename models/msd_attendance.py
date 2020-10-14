@@ -18,11 +18,18 @@ class MsdAttendance(models.Model):
     def _default_approver(self):
         return self.env.user.employee_id.parent_id
 
+    @api.model
+    def _default_department(self):
+        return self.env.user.employee_id.x_department_name
+
     # @api.model
     # def _default_pjcode(self):
     #     return self.env.user.employee_id.pj_cd
 
-    title = fields.Char(string="勤務表報告", copy=False, help="勤務表の報告です")
+    name = fields.Char('勤務表報告', required=True, readonly=True,
+                       states={'draft': [('readonly', False)], 'reported': [('readonly', False)]},
+                       )
+
     employee_id = fields.Many2one('hr.employee', string="従業員", readonly=True, default=_default_employee_id)
     state = fields.Selection([
         ('draft', 'ドラフト'),
@@ -32,7 +39,8 @@ class MsdAttendance(models.Model):
     user_id = fields.Many2one('res.users', 'Manager', readonly=True, copy=False,
                                tracking=True)
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
-    department_id = fields.Many2one('hr.department', string='Department')
+    department_id = fields.Many2one('hr.department', string='Department',readonly=True)
+    department_name = fields.Char(string="部門名", readonly=True, required=True, default=_default_department)
     pjcode = fields.Char(string="PJコード", required=True, default=lambda self: self.env['ss.order']._get_pj_cds(self.env.user.employee_id.id))
     workload = fields.Float(string="工数")
     attachment_number = fields.Integer(compute='_compute_attachment_number', string='Number of Attachments')
@@ -58,32 +66,6 @@ class MsdAttendance(models.Model):
         res['context'] = {'default_res_model': 'msd.attendance', 'default_res_id': self.id}
         return res
 
-    image_1920 = fields.Image(string="図書写真")
-    name = fields.Char(string="書名")
-    isbn = fields.Char(string="作成時間", copy=False)
-    author = fields.Char(string="作者")
-    pages = fields.Integer(string="ページ数")
-    publish_date = fields.Date(string="出版時期")
-    publisher = fields.Char(string="出版社")
-    price = fields.Float(string="定価", digits=(7, 2))
-    description = fields.Text(string="概要", help="""本図書の概要説明""")
-    binding_type = fields.Selection(
-        [("common", "普通"), ("hardcover", "ハードカバー")],
-        string="図書形式", index=True, default='common'
-    )
-    e_link = fields.Html(string="電子版リンク")
-    borrowed = fields.Boolean(string="貸出中", default=False)
-    date_last_borrowed = fields.Datetime("最後の貸出時刻", index=True)
-
-    #@api.model
-    #def name_get(self):
-        #result = []
-        #for book in self:
-         #   result.append((book.id, '%s(%s)' % (book.name, book.isbn)))
-        #return result
-    # def action_return(self):
-    #     self.borrowed = False
-    #     self.date_last_borrowed = None
     def _default_employee_id(self):
         return self.env.user.employee_id
 
