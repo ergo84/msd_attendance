@@ -1,5 +1,5 @@
 {
-    'name': "msd_attendance",
+    'name': "勤務表管理",
     'summary': """
         勤務表管理
         """,
@@ -21,7 +21,7 @@
     'data': [
         'security/msd_attendance_security.xml',
         'security/ir.model.access.csv',
-        # 'security/ir_rule.xml',
+        'security/ir_rule.xml',
         'views/msd_attendance.xml',
 
     ],

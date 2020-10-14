@@ -20,16 +20,16 @@
                     <filter string="自分の勤務表" name="my_attendance" domain="[('employee_id.user_id', '=', uid)]"/>
                     <filter string="自分の部門" name="my_team_reports" domain="[('employee_id.parent_id.user_id', '=', uid)]" groups="msd_attendance.group_msd_attendance_team_approver"/>
                     <separator />
-                    <filter domain="[('state', '=', 'draft')]" string="未提出" name="draft"/>
+<!--                    <filter domain="[('state', '=', 'draft')]" string="未提出" name="draft"/>-->
                     <filter domain="[('state', '=', 'reported')]" string="未確認" name="reported"/>
                     <filter domain="[('state', '=', 'approved')]" string="確認済" name="approved"/>
                     <separator/>
-                    <filter domain="[('employee_id.active', '=', False)]" string="過去の従業員" name="inactive" groups="msd_attendance.group_msd_attendance_all_approver,msd_attendance.group_msd_attendance_manager"/>
+                    <filter domain="[('employee_id.active', '=', False)]" string="過去の従業員" name="inactive" groups="msd_attendance.group_msd_attendance_manager"/>
 
                 <!-- グループ化のドロップダウンメニューに候補として追加する内容 -->
                     <group expand="1" string="Group By">
                         <filter string="従業員" name="employee" domain="[]" context="{'group_by':'employee_id'}"/>
-                        <filter string="部門" name="department" context="{'group_by':'department_id'}"/>
+                        <filter string="部門" name="department" context="{'group_by':'department_name'}"/>
                         <filter string="PJコード" name="PJcode" domain="[]" context="{'group_by': 'pjcode'}"/>
                         <filter string="日付" name="month" domain="[]" context="{'group_by': 'create_date'}"/>
                         <filter string="ステータス" name="status" domain="[]" context="{'group_by': 'state'}"/>
@@ -45,7 +45,7 @@
             <field name="arch" type="xml">
                 <tree string="勤務表">
                 <!-- editable='bottom'の属性をtreeタグにつけると、treeのリストはそのまま編集可能になるが、フォームは開けなくなる -->
-                    <field name="title" />
+                    <field name="name" />
                     <field name="employee_id"/>
                     <field name="create_date"/>
                     <field name="state"/>
@@ -66,15 +66,15 @@
                 <form string="勤務表">
                     <header>
                         <button name="action_submit_attendance" states="draft" string="提出" type="object" class="btn-primary"/>
-                        <button name="approve_attendance" states="reported" string="確認" type="object" groups="msd_attendance.group_msd_attendance_team_approver,msd_attendance.group_msd_attendance_all_approver,msd_attendance.group_msd_attendance_manager" class="btn-primary"/>
+                        <button name="approve_attendance" states="reported" string="確認" type="object" groups="msd_attendance.group_msd_attendance_team_approver,msd_attendance.group_msd_attendance_manager" class="btn-primary"/>
 
                         <field name="state" widget="statusbar" statusbar_visible="draft,reported,approved"/>
                     </header>
                     <sheet>
                         <div class="oe_title">
-                            <label for="title" class="oe_edit_only"/>
+                            <label for="name" class="oe_edit_only"/>
                             <h1>
-                                <field name="title" placeholder="e.g. 202007勤務表"/>
+                                <field name="name" placeholder="e.g. 20XXXX勤務表"/>
                             </h1>
                         </div>
                         <group col="4">
@@ -109,7 +109,7 @@
             <field name="model">msd.attendance</field>
             <field name="arch" type="xml">
                 <kanban create="false" class="o_modules_kanban">
-                    <field name="title" />
+                    <field name="name" />
                     <field name="employee_id"/>
                     <field name="create_date"/>
                     <field name="pjcode"/>
@@ -119,7 +119,7 @@
                             <div t-attf-class="oe_kanban_card oe_kanban_global_click">
                                 <div class="row">
                                     <div class="col-12">
-                                        <strong class="o_kanban_record_title"><span><t t-esc="record.title.value"/></span></strong>
+                                        <strong class="o_kanban_record_name"><span><t t-esc="record.name.value"/></span></strong>
                                         <strong class="o_kanban_record_subtitle float-right"><span class="text-right"><field name="pjcode"/></span></strong>
                                     </div>
                                 </div>
@@ -149,16 +149,8 @@
             <field name="res_model">msd.attendance</field>
             <!-- この動作はどのようなビューを表示させるか規定 -->
             <field name="view_mode">tree,form,kanban</field>
-            <!-- こちらのドメインは最初から表示される内容のフィルタをかけて限定表示するような機能設定 -->
-            <!-- 例：<field name="domain">[('author','=','金庸')]</field> -->
-            <!-- <field name="domain">[('author','=','金庸')]</field> -->
             <field name="domain">[]</field>
-            <!-- こちらはsearch欄の場所で最初から上記設定したgroup化について最初からデフォルトとなってる設定 -->
-            <!-- ここでの命名法は特殊で、search_default_から始まり、後ろに検索ビューのとあるfilterのnameを入れる -->
             <field name="context">{}</field>
-            <!-- 'search_default_author_group': 1, 'search_default_name_group':1 上記のcontextに入力 -->
-            <!-- ここのrefはsearch viewのidを入れないといけない -->
-<!--            <field name="search_view_id" ref="view_msd_attendance_search"/>-->
         </record>
 
         <record id="action_msd_attendance_draft" model="ir.actions.act_window">
@@ -221,29 +213,47 @@
 
         <!-- Middle Menu -->
         <menuitem id="menu_msd_attendance" name='勤務表報告' parent="menu_msd_attendance_root" sequence="10" groups="msd_attendance.group_msd_attendance_team_approver"/>
-        <menuitem id="menu_msd_attendance_draft"
-                  name="未提出"
-                  sequence="1"
-                  parent="menu_msd_attendance"
-                  action="action_msd_attendance_draft"
-        />
+<!--        <menuitem id="menu_msd_attendance_draft"-->
+<!--                  name="未提出"-->
+<!--                  sequence="1"-->
+<!--                  parent="menu_msd_attendance"-->
+<!--                  action="action_msd_attendance_draft"-->
+<!--        />-->
         <menuitem id="menu_msd_attendance_to_confirm"
                   name="未確認"
-                  sequence="2"
+                  sequence="1"
                   parent="menu_msd_attendance"
-                  groups="msd_attendance.group_msd_attendance_all_approver"
+                  groups="msd_attendance.group_msd_attendance_team_approver"
                   action="action_msd_attendance_to_confirm"
         />
         <menuitem id="menu_msd_attendance_confirmed"
                   name="確認済"
-                  sequence="3"
+                  sequence="2"
                   parent="menu_msd_attendance"
-                  groups="msd_attendance.group_msd_attendance_all_approver"
+                  groups="msd_attendance.group_msd_attendance_team_approver"
                   action="action_msd_attendance_confirmed"
         />
 
         <menuitem id="menu_msd_attendance_my_attendance" name="自分の勤務表" sequence="20" parent="menu_msd_attendance_root" groups="base.group_user"/>
         <menuitem id="menu_msd_attendance_my_attendance_to_submit" sequence="20" parent="menu_msd_attendance_root" action="msd_attendance_actions_my_unsubmitted"/>
+<!--        <menuitem id="menu_msd_attendance_my_draft"-->
+<!--                  name="未提出"-->
+<!--                  sequence="1"-->
+<!--                  parent="menu_msd_attendance_my_attendance"-->
+<!--                  action="action_msd_attendance_draft"-->
+<!--        />-->
+<!--        <menuitem id="menu_msd_attendance_my_to_confirm"-->
+<!--                  name="未確認"-->
+<!--                  sequence="2"-->
+<!--                  parent="menu_msd_attendance_my_attendance"-->
+<!--                  action="action_msd_attendance_to_confirm"-->
+<!--        />-->
+<!--        <menuitem id="menu_msd_attendance_my_confirmed"-->
+<!--                  name="確認済"-->
+<!--                  sequence="3"-->
+<!--                  parent="menu_msd_attendance_my_attendance"-->
+<!--                  action="action_msd_attendance_confirmed"-->
+<!--        />-->
     </data>
 
 </odoo>
