@@ -67,8 +67,6 @@
                     <header>
                         <button name="action_submit_attendance" states="draft" string="提出" type="object" class="btn-primary"/>
                         <button name="approve_attendance" states="reported" string="確認" type="object" groups="msd_attendance.group_msd_attendance_team_approver,msd_attendance.group_msd_attendance_manager" class="btn-primary"/>
-<!--                        <button name="%(msd_expense.msd_social_expense_refuse_wizard_action)d" states="reported,approved" context="{'msd_expense_refuse_model':'msd.social.expense'}" string="差し戻す" type="action" groups="msd_expense.group_msd_expense_department_approver" />-->
-
                         <field name="state" widget="statusbar" statusbar_visible="draft,reported,approved"/>
                     </header>
                     <sheet>
